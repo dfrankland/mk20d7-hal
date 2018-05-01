@@ -1,0 +1,17 @@
+[package]
+name = "mk20d7-hal"
+version = "0.1.0"
+authors = ["Dylan Frankland <dylan@frankland.io>"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "HAL for the MK20D7 family of microcontrollers"
+keywords = ["arm", "cortex-m", "mk20", "hal"]
+license = "MIT"
+repository = "https://github.com/dfrankland/mk20d7-hal"
+
+[dependencies]
+cortex-m = "0.4.0"
+embedded-hal = "0.1.0"
+mk20d7 = "0.1.0"
+
+[features]
+rt = ["mk20d7/rt"]
