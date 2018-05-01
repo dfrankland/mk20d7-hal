@@ -7,9 +7,7 @@ pub struct Watchdog<'a> {
 
 impl<'a> Watchdog<'a> {
     pub fn new (wdog: &'a RegisterBlock) -> Watchdog<'a> {
-        Watchdog {
-            wdog: wdog,
-        }
+        Watchdog { wdog }
     }
 
     pub fn is_enabled(&self) -> bool {
