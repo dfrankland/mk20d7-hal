@@ -37,20 +37,30 @@ impl<'a> Oscillator<'a> {
 
     pub fn set_capacitance(&self, capacitance: u8) {
         if capacitance % 2 == 1 || capacitance > 30 {
-            panic!("Invalid crystal capacitance value: {}", capacitance)
+            panic!("Invalid crystal capacitance value: {}", capacitance);
         }
 
+        // Convert `capacitance` as an integer to a binary array.
         let mut binary = [false; 5];
         for i in 0..5 {
             binary[i] = ((capacitance >> i) & 1) == 1;
         }
 
+        // Add capacitence to the oscillator load using `capacitance` binary array.
         self.osc.cr.write(
             |w| {
+                // Add 2 pF capacitor to the oscillator load.
                 if binary[1] { w.sc2p().set_bit(); } else { w.sc2p().clear_bit(); }
+
+                // Add 4 pF capacitor to the oscillator load.
                 if binary[2] { w.sc4p().set_bit(); } else { w.sc4p().clear_bit(); }
+
+                // Add 8 pF capacitor to the oscillator load.
                 if binary[3] { w.sc8p().set_bit(); } else { w.sc8p().clear_bit(); }
+
+                // Add 16 pF capacitor to the oscillator load.
                 if binary[4] { w.sc16p().set_bit(); } else { w.sc16p().clear_bit(); }
+
                 w
             }
         );
