@@ -147,20 +147,20 @@ macro_rules! gpio {
 
                         $PTXi { _mode: PhantomData }
                     }
-                }
 
-                impl<MODE> OutputPin for $PTXi<Output<MODE>> {
-                    fn is_high(&self) -> bool {
+                    pub fn is_high(&self) -> bool {
                         let output = unsafe {
                             (*$PTX::ptr()).pdor.read().bits()
                         };
                         output & (1 << $i) != 0
                     }
 
-                    fn is_low(&self) -> bool {
+                    pub fn is_low(&self) -> bool {
                         !self.is_high()
                     }
+                }
 
+                impl<MODE> OutputPin for $PTXi<Output<MODE>> {
                     fn set_low(&mut self) {
                         unsafe {
                             (*$PTX::ptr()).pcor.write(

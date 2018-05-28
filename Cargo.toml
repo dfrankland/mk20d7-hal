@@ -9,9 +9,9 @@ license = "MIT"
 repository = "https://github.com/dfrankland/mk20d7-hal"
 
 [dependencies]
-cortex-m = "0.4.0"
-embedded-hal = "0.1.0"
-mk20d7 = "0.1.0"
+cortex-m = "0.5.2"
+embedded-hal = "0.2.1"
+mk20d7 = "0.1.1"
 
 [features]
 rt = ["mk20d7/rt"]
