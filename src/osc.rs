@@ -1,5 +1,13 @@
 use mk20d7::{self, osc::RegisterBlock};
 
+#[allow(unknown_lints)]
+#[allow(needless_range_loop)]
+fn decimal_to_binary(binary: &mut [bool], decimal: u8) {
+    for i in 0..binary.len() {
+        binary[i] = ((decimal >> i) & 1) == 1;
+    }
+}
+
 pub struct Oscillator<'a> {
     osc: &'a RegisterBlock,
 }
@@ -44,9 +52,7 @@ impl<'a> Oscillator<'a> {
         // Convert `capacitance` as an integer to a binary array.
         // 5 is the square root of the the max capacitance rounded to the nearest integer.
         let mut binary = [false; 5];
-        for i in 0..5 {
-            binary[i] = ((capacitance >> i) & 1) == 1;
-        }
+        decimal_to_binary(&mut binary, capacitance);
 
         // Add capacitance to the oscillator load using `capacitance` binary array.
         self.osc.cr.write(
