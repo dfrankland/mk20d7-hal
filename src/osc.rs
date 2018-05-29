@@ -8,6 +8,20 @@ fn decimal_to_binary(binary: &mut [bool], decimal: u8) {
     }
 }
 
+fn binary_to_decimal(binary: &[bool]) -> u8 {
+    let mut output = 0;
+    for (index, i) in binary.iter().enumerate() {
+        if *i {
+            if index == 0 {
+                output += 1;
+            } else {
+                output += 2 << (index - 1);
+            }
+        }
+    }
+    output
+}
+
 pub struct Oscillator<'a> {
     osc: &'a RegisterBlock,
 }
@@ -72,5 +86,16 @@ impl<'a> Oscillator<'a> {
                 w
             }
         );
+    }
+
+    pub fn get_capacitance(&self) -> u8 {
+        let r = self.osc.cr.read();
+        binary_to_decimal(&[
+            false,
+            r.sc2p().bit_is_set(),
+            r.sc4p().bit_is_set(),
+            r.sc8p().bit_is_set(),
+            r.sc16p().bit_is_set(),
+        ])
     }
 }
