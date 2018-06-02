@@ -150,4 +150,13 @@ impl<'a> SystemIntegrationModule<'a> {
 
         (core, bus, flash)
     }
+
+    pub fn get_frequencies(&self) -> (i8, i8, i8) {
+        let (core, bus, flash) = self.get_dividers();
+        (
+            MAXIMUM_CLOCK_FREQUENCY / core,
+            MAXIMUM_CLOCK_FREQUENCY / bus,
+            MAXIMUM_CLOCK_FREQUENCY / flash,
+        )
+    }
 }
