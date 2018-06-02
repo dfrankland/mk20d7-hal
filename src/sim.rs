@@ -1,5 +1,7 @@
 use mk20d7::{sim::RegisterBlock, sim::clkdiv1};
 
+const MAXIMUM_CLOCK_FREQUENCY: i8 = 72;
+
 pub struct SystemIntegrationModule<'a> {
     sim: &'a RegisterBlock,
 }
@@ -9,7 +11,7 @@ impl<'a> SystemIntegrationModule<'a> {
         SystemIntegrationModule { sim }
     }
 
-    pub fn set_dividers(&mut self, core: u32, bus: u32, flash: u32) {
+    pub fn set_dividers(&mut self, core: i8, bus: i8, flash: i8) {
         self.sim.clkdiv1.write(
             |w| {
                 {
@@ -86,7 +88,7 @@ impl<'a> SystemIntegrationModule<'a> {
         )
     }
 
-    pub fn get_dividers(&self) -> (u32, u32, u32) {
+    pub fn get_dividers(&self) -> (i8, i8, i8) {
         let r = self.sim.clkdiv1.read();
 
         let core = match r.outdiv1() {
