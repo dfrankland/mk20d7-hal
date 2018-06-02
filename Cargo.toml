@@ -13,5 +13,9 @@ cortex-m = "0.5.2"
 embedded-hal = "0.2.1"
 mk20d7 = "0.1.1"
 
+[dependencies.cast]
+default-features = false
+version = "0.2.2"
+
 [features]
 rt = ["mk20d7/rt"]
