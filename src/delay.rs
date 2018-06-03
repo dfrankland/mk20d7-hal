@@ -42,7 +42,7 @@ impl<'a> DelayMs<u8> for Delay<'a> {
 
 impl<'a> DelayUs<u32> for Delay<'a> {
     fn delay_us(&mut self, us: u32) {
-        let rvr = us * self.sim.get_frequencies().0 as u32;
+        let rvr = us * u32::from(self.sim.get_frequencies().0);
 
         if rvr > (1 << 24) {
             panic!("Delay must be between 1 and 0x00ffffff (1 << 24).");
