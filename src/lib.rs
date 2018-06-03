@@ -8,6 +8,7 @@ extern crate cast;
 
 pub mod delay;
 pub mod gpio;
+pub mod mcg;
 pub mod osc;
 pub mod prelude;
 pub mod sim;
