@@ -1,7 +1,6 @@
 use mk20d7::{self, osc::RegisterBlock};
 
-#[allow(unknown_lints)]
-#[allow(needless_range_loop)]
+#[allow(unknown_lints, needless_range_loop)]
 fn decimal_to_binary(binary: &mut [bool], decimal: u8) {
     for i in 0..binary.len() {
         binary[i] = ((decimal >> i) & 1) == 1;
