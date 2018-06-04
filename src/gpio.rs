@@ -224,7 +224,6 @@ macro_rules! gpio {
             }
 
             impl PCR {
-                #[allow(dead_code)]
                 pub(crate) fn pcr(&mut self) -> &[$portx::PCR; 32] {
                     unsafe { &(*$PORTX::ptr()).pcr }
                 }
@@ -248,7 +247,6 @@ macro_rules! gpio {
             }
 
             impl PDDR {
-                #[allow(dead_code)]
                 pub(crate) fn pddr(&mut self) -> &$ptx::PDDR {
                     unsafe { &(*$PTX::ptr()).pddr }
                 }
@@ -272,7 +270,6 @@ macro_rules! gpio {
             }
 
             impl PDOR {
-                #[allow(dead_code)]
                 pub(crate) fn pdor(&mut self) -> &$ptx::PDOR {
                     unsafe { &(*$PTX::ptr()).pdor }
                 }
@@ -315,31 +312,29 @@ macro_rules! gpio {
 
                 // Reference: 11.14.1 Pin Control Register n (PORTx_PCRn)
                 impl<MODE> $PTXi<MODE> {
-                    pub fn into_push_pull_output(self) -> $PTXi<Output<PushPull>> {
-                        unsafe {
-                            (*$PORTX::ptr()).pcr[$i].write(
-                                |w| {
-                                    w.mux()._001(); // Set the pin to mode 1 (GPIO)
-                                    w.ode().clear_bit(); // Disable Open Drain
-                                    w.dse().set_bit(); // Enable Drive Strength
-                                    w.sre().set_bit() // Enable Slew Rate
-                                }
-                            )
-                        };
+                    pub fn into_push_pull_output(self, pcr: &mut PCR, pddr: &mut PDDR) -> $PTXi<Output<PushPull>> {
+                        pcr.pcr()[$i].write(
+                            |w| {
+                                w.mux()._001(); // Set the pin to mode 1 (GPIO)
+                                w.ode().clear_bit(); // Disable Open Drain
+                                w.dse().set_bit(); // Enable Drive Strength
+                                w.sre().set_bit() // Enable Slew Rate
+                            }
+                        );
 
                         // Set the pin to output mode
-                        unsafe { (*$PTX::ptr()).pddr.modify(|r, w| w.bits(r.bits() | 1 << $i)) };
+                        pddr.pddr().modify(|r, w| unsafe { w.bits(r.bits() | 1 << $i) });
 
                         $PTXi { _mode: PhantomData }
                     }
 
-                    pub fn is_high(&self) -> bool {
-                        let output = unsafe { (*$PTX::ptr()).pdor.read().bits() };
+                    pub fn is_high(&self, pdor: &mut PDOR) -> bool {
+                        let output = pdor.pdor().read().bits();
                         output & (1 << $i) != 0
                     }
 
-                    pub fn is_low(&self) -> bool {
-                        !self.is_high()
+                    pub fn is_low(&self, pdor: &mut PDOR) -> bool {
+                        !self.is_high(pdor)
                     }
                 }
 
