@@ -79,8 +79,9 @@ macro_rules! gpio {
                 PushPull,
             };
 
-            /// General Purpose Input/Output parts
+            /// General Purpose Input/Output and Pin Control and Interrupts parts
             pub struct Parts {
+                // Pin Control and Interrupts parts
                 /// Digital Filter Clock Register
                 pub dfcr: DFCR,
 
