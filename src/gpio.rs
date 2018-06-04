@@ -63,7 +63,7 @@ pub struct ALT7;
 pub struct EzPort;
 
 macro_rules! gpio {
-    ($PORTX:ident, $portx:ident, $PTX:ident, $gpiox:ident, $docport:expr, [ $($PTXi:ident: ($ptxi:ident, $i:expr, $MODE:ty, $docpin:expr),)+]) =>
+    ($PORTX:ident, $portx:ident, $PTX:ident, $ptx:ident, $gpiox:ident, $docport:expr, [ $($PTXi:ident: ($ptxi:ident, $i:expr, $MODE:ty, $docpin:expr),)+]) =>
     {
         #[doc = "General Purpose Input/Output Port "]
         #[doc = $docport]
@@ -72,7 +72,7 @@ macro_rules! gpio {
 
             use hal::digital::OutputPin;
 
-            use mk20d7::{sim::SCGC5, $PORTX, $PTX, $portx};
+            use mk20d7::{sim::SCGC5, $PORTX, $PTX, $portx, $ptx};
 
             use super::{
                 Floating, GpioExt, Input, Output,
@@ -103,6 +103,25 @@ macro_rules! gpio {
                 /// Pin Control Register n
                 pub pcr: PCR,
 
+                // General Purpose Input/Output parts
+                /// Port Clear Output Register
+                pub pcor: PCOR,
+
+                /// Port Data Direction Register
+                pub pddr: PDDR,
+
+                /// Port Data Input Register
+                pub pdir: PDIR,
+
+                /// Port Data Output Register
+                pub pdor: PDOR,
+
+                /// Port Set Output Register
+                pub psor: PSOR,
+
+                /// Port Toggle Output Register
+                pub ptor: PTOR,
+
                 $(
                     #[doc = "General Purpose Input/Output Port "]
                     #[doc = $docport]
@@ -127,6 +146,13 @@ macro_rules! gpio {
                         gpchr: GPCHR { _0: () },
                         gpclr: GPCLR { _0: () },
                         isfr: ISFR { _0: () },
+                        pcr: PCR { _0: () },
+                        pcor: PCOR { _0: () },
+                        pddr: PDDR { _0: () },
+                        pdir: PDIR { _0: () },
+                        pdor: PDOR { _0: () },
+                        psor: PSOR { _0: () },
+                        ptor: PTOR { _0: () },
                         $(
                             $ptxi: $PTXi {_mode: PhantomData},
                         )+
@@ -204,6 +230,78 @@ macro_rules! gpio {
                 }
             }
 
+            /// Port Clear Output Register
+            pub struct PCOR {
+                _0: (),
+            }
+
+            impl PCOR {
+                #[allow(dead_code)]
+                pub(crate) fn pcor(&mut self) -> &$ptx::PCOR {
+                    unsafe { &(*$PTX::ptr()).pcor }
+                }
+            }
+
+            /// Port Data Direction Register
+            pub struct PDDR {
+                _0: (),
+            }
+
+            impl PDDR {
+                #[allow(dead_code)]
+                pub(crate) fn pddr(&mut self) -> &$ptx::PDDR {
+                    unsafe { &(*$PTX::ptr()).pddr }
+                }
+            }
+
+            /// Port Data Input Register
+            pub struct PDIR {
+                _0: (),
+            }
+
+            impl PDIR {
+                #[allow(dead_code)]
+                pub(crate) fn pdir(&mut self) -> &$ptx::PDIR {
+                    unsafe { &(*$PTX::ptr()).pdir }
+                }
+            }
+
+            /// Port Data Output Register
+            pub struct PDOR {
+                _0: (),
+            }
+
+            impl PDOR {
+                #[allow(dead_code)]
+                pub(crate) fn pdor(&mut self) -> &$ptx::PDOR {
+                    unsafe { &(*$PTX::ptr()).pdor }
+                }
+            }
+
+            /// Port Set Output Register
+            pub struct PSOR {
+                _0: (),
+            }
+
+            impl PSOR {
+                #[allow(dead_code)]
+                pub(crate) fn psor(&mut self) -> &$ptx::PSOR {
+                    unsafe { &(*$PTX::ptr()).psor }
+                }
+            }
+
+            /// Port Toggle Output Register
+            pub struct PTOR {
+                _0: (),
+            }
+
+            impl PTOR {
+                #[allow(dead_code)]
+                pub(crate) fn ptor(&mut self) -> &$ptx::PTOR {
+                    unsafe { &(*$PTX::ptr()).ptor }
+                }
+            }
+
             // This pin owns its section of the PDOR, PSOR, PCOR, PTOR, and PDIR registers, as well
             // as its PCR register
             $(
@@ -260,7 +358,7 @@ macro_rules! gpio {
 }
 
 // Reference: 10.3.1 K20 Signal Multiplexing and Pin Assignments
-gpio!(PORTA, porta, PTA, gpioa, "A", [
+gpio!(PORTA, porta, PTA, pta, gpioa, "A", [
       PTA0: (pta0, 0, Input<Floating>, "0"), // JTAG_TCLK / SWD_CLK / EZP_CLK
       PTA1: (pta1, 1, Input<Floating>, "1"), // JTAG_TDI / EZP_DI
       PTA2: (pta2, 2, Input<Floating>, "2"), // JTAG_TDO / TRACE_SWO / EZP_DO
@@ -273,7 +371,7 @@ gpio!(PORTA, porta, PTA, gpioa, "A", [
       PTA19: (pta19, 19, Input<Floating>, "19"), // XTAL0
 ]);
 
-gpio!(PORTB, portb, PTB, gpiob, "B", [
+gpio!(PORTB, portb, PTB, ptb, gpiob, "B", [
       PTB0: (ptb0, 0, Input<Floating>, "0"), // ADC0_SE8 / ADC1_SE8 / TSI0_CH0
       PTB1: (ptb1, 1, Input<Floating>, "1"), // ADC0_SE9 / ADC1_SE9 / TSI0_CH6
       PTB2: (ptb2, 2, Input<Floating>, "2"), // ADC0_SE12 / TSI0_CH7
@@ -284,7 +382,7 @@ gpio!(PORTB, portb, PTB, gpiob, "B", [
       PTB19: (ptb19, 19, Input<Floating>, "19"), // TSI0_CH12
 ]);
 
-gpio!(PORTC, portc, PTC, gpioc, "C", [
+gpio!(PORTC, portc, PTC, ptc, gpioc, "C", [
       PTC0: (ptc0, 0, Input<Floating>, "0"), // ADC0_SE14 / TSI0_CH13
       PTC1: (ptc1, 1, Input<Floating>, "1"), // ADC0_SE15 / TSI0_CH14
       PTC2: (ptc2, 2, Input<Floating>, "2"), // ADC0_SE4b / CMP1_IN0 / TSI0_CH15
@@ -299,7 +397,7 @@ gpio!(PORTC, portc, PTC, gpioc, "C", [
       PTC11: (ptc11, 11, Input<Floating>, "11"), // ADC1_SE7b
 ]);
 
-gpio!(PORTD, portd, PTD, gpiod, "D", [
+gpio!(PORTD, portd, PTD, ptd, gpiod, "D", [
       PTD0: (ptd0, 0, Input<Floating>, "0"), // Disabled
       PTD1: (ptd1, 1, Input<Floating>, "1"), // ADC0_SE5b
       PTD2: (ptd2, 2, Input<Floating>, "2"), // Disabled
@@ -310,7 +408,7 @@ gpio!(PORTD, portd, PTD, gpiod, "D", [
       PTD7: (ptd7, 7, Input<Floating>, "7"), // Disabled
 ]);
 
-gpio!(PORTE, porte, PTE, gpioe, "E", [
+gpio!(PORTE, porte, PTE, pte, gpioe, "E", [
       PTE0: (pte0, 0, Input<Floating>, "0"), // ADC1_SE4a
       PTE1: (pte1, 1, Input<Floating>, "1"), // ADC1_SE5a
 ]);
