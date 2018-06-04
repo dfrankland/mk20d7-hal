@@ -75,8 +75,8 @@ macro_rules! gpio {
             use mk20d7::{sim::SCGC5, $PORTX, $PTX, $portx};
 
             use super::{
-                ALT2, ALT3, Floating, GpioExt, Input, OpenDrain, Output,
-                PullDown, PullUp, PushPull,
+                Floating, GpioExt, Input, Output,
+                PushPull,
             };
 
             /// General Purpose Input/Output parts
@@ -136,6 +136,7 @@ macro_rules! gpio {
             }
 
             impl DFCR {
+                #[allow(dead_code)]
                 pub(crate) fn cs(&mut self) -> &$portx::DFCR {
                     unsafe { &(*$PORTX::ptr()).dfcr }
                 }
@@ -147,6 +148,7 @@ macro_rules! gpio {
             }
 
             impl DFER {
+                #[allow(dead_code)]
                 pub(crate) fn dfe(&mut self) -> &$portx::DFER {
                     unsafe { &(*$PORTX::ptr()).dfer }
                 }
@@ -158,6 +160,7 @@ macro_rules! gpio {
             }
 
             impl DFWR {
+                #[allow(dead_code)]
                 pub(crate) fn filt(&mut self) -> &$portx::DFWR {
                     unsafe { &(*$PORTX::ptr()).dfwr }
                 }
@@ -179,6 +182,7 @@ macro_rules! gpio {
             }
 
             impl ISFR {
+                #[allow(dead_code)]
                 pub(crate) fn isf(&mut self) -> &$portx::ISFR {
                     unsafe { &(*$PORTX::ptr()).isfr }
                 }
