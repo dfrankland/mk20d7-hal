@@ -141,7 +141,7 @@ macro_rules! gpio {
 
             impl DFCR {
                 #[allow(dead_code)]
-                pub(crate) fn cs(&mut self) -> &$portx::DFCR {
+                pub(crate) fn dfcr(&mut self) -> &$portx::DFCR {
                     unsafe { &(*$PORTX::ptr()).dfcr }
                 }
             }
@@ -153,7 +153,7 @@ macro_rules! gpio {
 
             impl DFER {
                 #[allow(dead_code)]
-                pub(crate) fn dfe(&mut self) -> &$portx::DFER {
+                pub(crate) fn dfer(&mut self) -> &$portx::DFER {
                     unsafe { &(*$PORTX::ptr()).dfer }
                 }
             }
@@ -165,7 +165,7 @@ macro_rules! gpio {
 
             impl DFWR {
                 #[allow(dead_code)]
-                pub(crate) fn filt(&mut self) -> &$portx::DFWR {
+                pub(crate) fn dfwr(&mut self) -> &$portx::DFWR {
                     unsafe { &(*$PORTX::ptr()).dfwr }
                 }
             }
@@ -187,7 +187,7 @@ macro_rules! gpio {
 
             impl ISFR {
                 #[allow(dead_code)]
-                pub(crate) fn isf(&mut self) -> &$portx::ISFR {
+                pub(crate) fn isfr(&mut self) -> &$portx::ISFR {
                     unsafe { &(*$PORTX::ptr()).isfr }
                 }
             }
