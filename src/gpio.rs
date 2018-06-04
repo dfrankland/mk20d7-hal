@@ -1,157 +1,222 @@
 use core::marker::PhantomData;
 use mk20d7::sim::SCGC5;
 
+/// Extension trait to split a GPIO peripheral in independent pins and registers
 pub trait GpioExt {
+    /// The to split the GPIO into
     type Parts;
+
+    /// Splits the GPIO block into independent pins and registers
     fn split(self, scgc5: &SCGC5) -> Self::Parts;
 }
 
-pub struct Inactive;
+/// Input mode (type state)
 pub struct Input<MODE> {
-    _mode: PhantomData<MODE>
+    _mode: PhantomData<MODE>,
 }
+
+/// Floating input (type state)
 pub struct Floating;
+
+/// Pulled down input (type state)
+pub struct PullDown;
+
+/// Pulled up input (type state)
+pub struct PullUp;
+
+/// Output mode (type state)
 pub struct Output<MODE> {
-    _mode: PhantomData<MODE>
+    _mode: PhantomData<MODE>,
 }
-pub struct OpenDrain;
+
+/// Push pull output (type state)
 pub struct PushPull;
 
+/// Open drain output (type state)
+pub struct OpenDrain;
+
+/// Alternate function 0 (type state)
+pub struct ALT0;
+
+/// Alternate function 1 (type state)
+pub struct ALT1;
+
+/// Alternate function 2 (type state)
+pub struct ALT2;
+
+/// Alternate function 3 (type state)
+pub struct ALT3;
+
+/// Alternate function 4 (type state)
+pub struct ALT4;
+
+/// Alternate function 5 (type state)
+pub struct ALT5;
+
+/// Alternate function 6 (type state)
+pub struct ALT6;
+
+/// Alternate function 7 (type state)
+pub struct ALT7;
+
+/// Alternate function EzPort (type state)
+pub struct EzPort;
+
 macro_rules! gpio {
-    ($PORTX:ident, $portx:ident, $PTX:ident, $gpiox:ident, [ $($PTXi:ident: ($ptxi:ident, $i:expr, $MODE:ty),)+]) =>
+    ($PORTX:ident, $portx:ident, $PTX:ident, $gpiox:ident, $docport:expr, [ $($PTXi:ident: ($ptxi:ident, $i:expr, $MODE:ty, $docpin:expr),)+]) =>
     {
+        #[doc = "General Purpose Input/Output Port "]
+        #[doc = $docport]
         pub mod $gpiox {
             use core::marker::PhantomData;
 
             use hal::digital::OutputPin;
 
-            use mk20d7::{$PORTX, $PTX};
-            // use mk20d7::$portx::PCR;
-            use mk20d7::sim::SCGC5;
+            use mk20d7::{sim::SCGC5, $PORTX, $PTX, $portx};
 
-            use super::{Output, Inactive, PushPull, GpioExt};
-            // use super::{Input, Floating, OpenDrain};
+            use super::{
+                ALT2, ALT3, Floating, GpioExt, Input, OpenDrain, Output,
+                PullDown, PullUp, PushPull,
+            };
 
+            /// General Purpose Input/Output parts
             pub struct Parts {
-                //_gpclr: GPCLR,
-                //_gpchr: GPCHR,
-                //_isfr: ISFR,
-                //_pddr: PDDR,
+                /// Digital Filter Clock Register
+                pub dfcr: DFCR,
+
+                /// Digital Filter Enable Register
+                pub dfer: DFER,
+
+                /// Digital Filter Width Register
+                pub dfwr: DFWR,
+
+                /// Global Pin Control High Register
+                pub gpchr: GPCHR,
+
+                /// Global Pin Control Low Register
+                pub gpclr: GPCLR,
+
+                /// Interrupt Status Flag Register
+                pub isfr: ISFR,
+
                 $(
-                pub $ptxi: $PTXi<$MODE>,
+                    #[doc = "General Purpose Input/Output Port "]
+                    #[doc = $docport]
+                    #[doc = " Pin "]
+                    #[doc = $docpin]
+                    pub $ptxi: $PTXi<$MODE>,
                 )+
             }
 
             impl GpioExt for ($PTX, $PORTX) {
                 type Parts = Parts;
+
                 fn split(self, scgc5: &SCGC5) -> Self::Parts {
                     // Enable the GPIO module
                     // Reference: 10.2.3 Clock gating
-                    scgc5.write(
-                        |w| {
-                            w.$portx().set_bit()
-                        }
-                    );
+                    scgc5.write(|w| w.$portx().set_bit());
 
                     Parts {
-                        //// These registers are dangerous to keep around because they can modify
-                        //// pins we have already moved out
-                        // _gpclr: GPCLR{},
-                        // _gpchr: GPCHR{},
-
-                        //// This is also a global register, see above
-                        // _isfr: ISFR{},
-                        // _pddr: PDDR{},
-
+                        dfcr: DFCR { _0: () },
+                        dfer: DFER { _0: () },
+                        dfwr: DFWR { _0: () },
+                        gpchr: GPCHR { _0: () },
+                        gpclr: GPCLR { _0: () },
+                        isfr: ISFR { _0: () },
                         $(
-                        $ptxi: $PTXi {_mode: PhantomData},
+                            $ptxi: $PTXi {_mode: PhantomData},
                         )+
                     }
                 }
             }
 
-            //// These come from PORTx
+            /// Digital Filter Clock Register
+            pub struct DFCR {
+                _0: (),
+            }
 
-            ///// Global Pin Control Low Register
-            // struct GPCLR {}
+            impl DFCR {
+                pub(crate) fn cs(&mut self) -> &$portx::DFCR {
+                    unsafe { &(*$PORTX::ptr()).dfcr }
+                }
+            }
 
-            ///// Global Pin Control High Register
-            // struct GPCHR {}
+            /// Digital Filter Enable Register
+            pub struct DFER {
+                _0: (),
+            }
 
-            ///// Interrupt Status Flag Register
-            // struct ISFR {}
+            impl DFER {
+                pub(crate) fn dfe(&mut self) -> &$portx::DFER {
+                    unsafe { &(*$PORTX::ptr()).dfer }
+                }
+            }
 
-            // I was not able to find documentation on these registers outside of the svd
+            /// Digital Filter Width Register
+            pub struct DFWR {
+                _0: (),
+            }
 
-            ///// Digital Filter Enable Register
-            // struct DFER {}
+            impl DFWR {
+                pub(crate) fn filt(&mut self) -> &$portx::DFWR {
+                    unsafe { &(*$PORTX::ptr()).dfwr }
+                }
+            }
 
-            ///// Digital Filter Clock Register
-            // struct DFCR {}
+            /// Global Pin Control High Register
+            pub struct GPCHR {
+                _0: (),
+            }
 
-            ///// Digital Filter Width Register
-            // struct DFWR {}
+            /// Global Pin Control Low Register
+            pub struct GPCLR {
+                _0: (),
+            }
 
-            // These are found in PTx
+            /// Interrupt Status Flag Register
+            pub struct ISFR {
+                _0: (),
+            }
 
-            ///// Port Data Output Register
-            // struct PDOR {}
-
-            ///// Port Set Output Register
-            // struct PSOR {}
-
-            ///// Port Clear Output Register
-            // struct PCOR {}
-
-            ///// Port Toggle Output Register
-            // struct PTOR {}
-
-            ///// Port Data Input Register
-            // struct PDIR {}
-
-            ///// Port Data Direction Register
-            // struct PDDR {}
+            impl ISFR {
+                pub(crate) fn isf(&mut self) -> &$portx::ISFR {
+                    unsafe { &(*$PORTX::ptr()).isfr }
+                }
+            }
 
             // This pin owns its section of the PDOR, PSOR, PCOR, PTOR, and PDIR registers, as well
             // as its PCR register
             $(
+                #[doc = "General Purpose Input/Output Port "]
+                #[doc = $docport]
+                #[doc = " Pin "]
+                #[doc = $docpin]
                 pub struct $PTXi<MODE> {
                     _mode: PhantomData<MODE>,
                 }
 
+                // Reference: 11.14.1 Pin Control Register n (PORTx_PCRn)
                 impl<MODE> $PTXi<MODE> {
-                    // pub(crate) fn pcr(&mut self) -> &PCR {
-                    //     unsafe {
-                    //         &(*$PORTX::ptr()).pcr[$i]
-                    //     }
-                    // }
-
                     pub fn into_push_pull_output(self) -> $PTXi<Output<PushPull>> {
-                        // Set the pin to mode 1 (GPIO), and disable Open Drain mode
                         unsafe {
                             (*$PORTX::ptr()).pcr[$i].write(
                                 |w| {
-                                    w.mux()._001().ode().clear_bit().dse().set_bit().sre().set_bit()
+                                    w.mux()._001(); // Set the pin to mode 1 (GPIO)
+                                    w.ode().clear_bit(); // Disable Open Drain
+                                    w.dse().set_bit(); // Enable Drive Strength
+                                    w.sre().set_bit() // Enable Slew Rate
                                 }
                             )
                         };
 
                         // Set the pin to output mode
-                        unsafe {
-                            (*$PTX::ptr()).pddr.modify(
-                                |r, w| {
-                                    w.bits(r.bits() | 1 << $i)
-                                }
-                            )
-                        };
+                        unsafe { (*$PTX::ptr()).pddr.modify(|r, w| w.bits(r.bits() | 1 << $i)) };
 
                         $PTXi { _mode: PhantomData }
                     }
 
                     pub fn is_high(&self) -> bool {
-                        let output = unsafe {
-                            (*$PTX::ptr()).pdor.read().bits()
-                        };
+                        let output = unsafe { (*$PTX::ptr()).pdor.read().bits() };
                         output & (1 << $i) != 0
                     }
 
@@ -162,23 +227,11 @@ macro_rules! gpio {
 
                 impl<MODE> OutputPin for $PTXi<Output<MODE>> {
                     fn set_low(&mut self) {
-                        unsafe {
-                            (*$PTX::ptr()).pcor.write(
-                                |w| {
-                                    w.bits(1 << $i)
-                                }
-                            )
-                        };
+                        unsafe { (*$PTX::ptr()).pcor.write(|w| w.bits(1 << $i)) }
                     }
 
                     fn set_high(&mut self) {
-                        unsafe {
-                            (*$PTX::ptr()).psor.write(
-                                |w| {
-                                    w.bits(1 << $i)
-                                }
-                            )
-                        };
+                        unsafe { (*$PTX::ptr()).psor.write(|w| w.bits(1 << $i)) }
                     }
                 }
             )+
@@ -187,57 +240,57 @@ macro_rules! gpio {
 }
 
 // Reference: 10.3.1 K20 Signal Multiplexing and Pin Assignments
-gpio!(PORTA, porta, PTA, gpioa, [
-      PTA0: (pta0, 0, Inactive), // JTAG_TCLK / SWD_CLK / EZP_CLK
-      PTA1: (pta1, 1, Inactive), // JTAG_TDI / EZP_DI
-      PTA2: (pta2, 2, Inactive), // JTAG_TDO / TRACE_SWO / EZP_DO
-      PTA3: (pta3, 3, Inactive), // JTAG_TMS / SWD_DIO
-      PTA4: (pta4, 4, Inactive), // NMI_b / EZP_CS_b
-      PTA5: (pta5, 5, Inactive), // Disabled
-      PTA12: (pta12, 12, Inactive), // CMP2_IN0
-      PTA13: (pta13, 13, Inactive), // CMP2_IN1
-      PTA18: (pta18, 18, Inactive), // EXTAL0
-      PTA19: (pta19, 19, Inactive), // XTAL0
+gpio!(PORTA, porta, PTA, gpioa, "A", [
+      PTA0: (pta0, 0, Input<Floating>, "0"), // JTAG_TCLK / SWD_CLK / EZP_CLK
+      PTA1: (pta1, 1, Input<Floating>, "1"), // JTAG_TDI / EZP_DI
+      PTA2: (pta2, 2, Input<Floating>, "2"), // JTAG_TDO / TRACE_SWO / EZP_DO
+      PTA3: (pta3, 3, Input<Floating>, "3"), // JTAG_TMS / SWD_DIO
+      PTA4: (pta4, 4, Input<Floating>, "4"), // NMI_b / EZP_CS_b
+      PTA5: (pta5, 5, Input<Floating>, "5"), // Disabled
+      PTA12: (pta12, 12, Input<Floating>, "12"), // CMP2_IN0
+      PTA13: (pta13, 13, Input<Floating>, "13"), // CMP2_IN1
+      PTA18: (pta18, 18, Input<Floating>, "18"), // EXTAL0
+      PTA19: (pta19, 19, Input<Floating>, "19"), // XTAL0
 ]);
 
-gpio!(PORTB, portb, PTB, gpiob, [
-      PTB0: (ptb0, 0, Inactive), // ADC0_SE8 / ADC1_SE8 / TSI0_CH0
-      PTB1: (ptb1, 1, Inactive), // ADC0_SE9 / ADC1_SE9 / TSI0_CH6
-      PTB2: (ptb2, 2, Inactive), // ADC0_SE12 / TSI0_CH7
-      PTB3: (ptb3, 3, Inactive), // ADC0_SE13 / TSI0_CH8
-      PTB16: (ptb16, 16, Inactive), // TSI0_CH9
-      PTB17: (ptb17, 17, Inactive), // TSI0_CH10
-      PTB18: (ptb18, 18, Inactive), // TSI0_CH11
-      PTB19: (ptb19, 19, Inactive), // TSI0_CH12
+gpio!(PORTB, portb, PTB, gpiob, "B", [
+      PTB0: (ptb0, 0, Input<Floating>, "0"), // ADC0_SE8 / ADC1_SE8 / TSI0_CH0
+      PTB1: (ptb1, 1, Input<Floating>, "1"), // ADC0_SE9 / ADC1_SE9 / TSI0_CH6
+      PTB2: (ptb2, 2, Input<Floating>, "2"), // ADC0_SE12 / TSI0_CH7
+      PTB3: (ptb3, 3, Input<Floating>, "3"), // ADC0_SE13 / TSI0_CH8
+      PTB16: (ptb16, 16, Input<Floating>, "16"), // TSI0_CH9
+      PTB17: (ptb17, 17, Input<Floating>, "17"), // TSI0_CH10
+      PTB18: (ptb18, 18, Input<Floating>, "18"), // TSI0_CH11
+      PTB19: (ptb19, 19, Input<Floating>, "19"), // TSI0_CH12
 ]);
 
-gpio!(PORTC, portc, PTC, gpioc, [
-      PTC0: (ptc0, 0, Inactive), // ADC0_SE14 / TSI0_CH13
-      PTC1: (ptc1, 1, Inactive), // ADC0_SE15 / TSI0_CH14
-      PTC2: (ptc2, 2, Inactive), // ADC0_SE4b / CMP1_IN0 / TSI0_CH15
-      PTC3: (ptc3, 3, Inactive), // CMP1_IN1
-      PTC4: (ptc4, 4, Inactive), // Disabled
-      PTC5: (ptc5, 5, Inactive), // Disabled
-      PTC6: (ptc6, 6, Inactive), // CMP0_IN0
-      PTC7: (ptc7, 7, Inactive), // CMP0_IN1
-      PTC8: (ptc8, 8, Inactive), // ADC1_SE4b / CMP0_IN2
-      PTC9: (ptc9, 9, Inactive), // ADC1_SE5b / CMP0_IN3
-      PTC10: (ptc10, 10, Inactive), // ADC1_SE6b
-      PTC11: (ptc11, 11, Inactive), // ADC1_SE7b
+gpio!(PORTC, portc, PTC, gpioc, "C", [
+      PTC0: (ptc0, 0, Input<Floating>, "0"), // ADC0_SE14 / TSI0_CH13
+      PTC1: (ptc1, 1, Input<Floating>, "1"), // ADC0_SE15 / TSI0_CH14
+      PTC2: (ptc2, 2, Input<Floating>, "2"), // ADC0_SE4b / CMP1_IN0 / TSI0_CH15
+      PTC3: (ptc3, 3, Input<Floating>, "3"), // CMP1_IN1
+      PTC4: (ptc4, 4, Input<Floating>, "4"), // Disabled
+      PTC5: (ptc5, 5, Input<Floating>, "5"), // Disabled
+      PTC6: (ptc6, 6, Input<Floating>, "6"), // CMP0_IN0
+      PTC7: (ptc7, 7, Input<Floating>, "7"), // CMP0_IN1
+      PTC8: (ptc8, 8, Input<Floating>, "8"), // ADC1_SE4b / CMP0_IN2
+      PTC9: (ptc9, 9, Input<Floating>, "9"), // ADC1_SE5b / CMP0_IN3
+      PTC10: (ptc10, 10, Input<Floating>, "10"), // ADC1_SE6b
+      PTC11: (ptc11, 11, Input<Floating>, "11"), // ADC1_SE7b
 ]);
 
-gpio!(PORTD, portd, PTD, gpiod, [
-      PTD0: (ptd0, 0, Inactive), // Disabled
-      PTD1: (ptd1, 1, Inactive), // ADC0_SE5b
-      PTD2: (ptd2, 2, Inactive), // Disabled
-      PTD3: (ptd3, 3, Inactive), // Disabled
-      PTD4: (ptd4, 4, Inactive), // Disabled
-      PTD5: (ptd5, 5, Inactive), // ADC0_SE6b
-      PTD6: (ptd6, 6, Inactive), // ADC0_SE7b
-      PTD7: (ptd7, 7, Inactive), // Disabled
+gpio!(PORTD, portd, PTD, gpiod, "D", [
+      PTD0: (ptd0, 0, Input<Floating>, "0"), // Disabled
+      PTD1: (ptd1, 1, Input<Floating>, "1"), // ADC0_SE5b
+      PTD2: (ptd2, 2, Input<Floating>, "2"), // Disabled
+      PTD3: (ptd3, 3, Input<Floating>, "3"), // Disabled
+      PTD4: (ptd4, 4, Input<Floating>, "4"), // Disabled
+      PTD5: (ptd5, 5, Input<Floating>, "5"), // ADC0_SE6b
+      PTD6: (ptd6, 6, Input<Floating>, "6"), // ADC0_SE7b
+      PTD7: (ptd7, 7, Input<Floating>, "7"), // Disabled
 ]);
 
-gpio!(PORTE, porte, PTE, gpioe, [
-      PTE0: (pte0, 0, Inactive), // ADC1_SE4a
-      PTE1: (pte1, 1, Inactive), // ADC1_SE5a
+gpio!(PORTE, porte, PTE, gpioe, "E", [
+      PTE0: (pte0, 0, Input<Floating>, "0"), // ADC1_SE4a
+      PTE1: (pte1, 1, Input<Floating>, "1"), // ADC1_SE5a
 ]);
