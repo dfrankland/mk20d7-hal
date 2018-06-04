@@ -100,6 +100,9 @@ macro_rules! gpio {
                 /// Interrupt Status Flag Register
                 pub isfr: ISFR,
 
+                /// Pin Control Register n
+                pub pcr: PCR,
+
                 $(
                     #[doc = "General Purpose Input/Output Port "]
                     #[doc = $docport]
@@ -186,6 +189,18 @@ macro_rules! gpio {
                 #[allow(dead_code)]
                 pub(crate) fn isf(&mut self) -> &$portx::ISFR {
                     unsafe { &(*$PORTX::ptr()).isfr }
+                }
+            }
+
+            /// Pin Control Register n
+            pub struct PCR {
+                _0: (),
+            }
+
+            impl PCR {
+                #[allow(dead_code)]
+                pub(crate) fn pcr(&mut self) -> &[$portx::PCR; 32] {
+                    unsafe { &(*$PORTX::ptr()).pcr }
                 }
             }
 
