@@ -329,8 +329,7 @@ macro_rules! gpio {
                     }
 
                     pub fn is_high(&self, pdor: &mut PDOR) -> bool {
-                        let output = pdor.pdor().read().bits();
-                        output & (1 << $i) != 0
+                        pdor.pdor().read().bits() & (1 << $i) != 0
                     }
 
                     pub fn is_low(&self, pdor: &mut PDOR) -> bool {
