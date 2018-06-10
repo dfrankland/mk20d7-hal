@@ -261,7 +261,6 @@ macro_rules! gpio {
             }
 
             impl PCOR {
-                #[allow(dead_code)]
                 pub(crate) fn pcor(&mut self) -> &$ptx::PCOR {
                     unsafe { &(*$PTX::ptr()).pcor }
                 }
@@ -284,7 +283,6 @@ macro_rules! gpio {
             }
 
             impl PDIR {
-                #[allow(dead_code)]
                 pub(crate) fn pdir(&mut self) -> &$ptx::PDIR {
                     unsafe { &(*$PTX::ptr()).pdir }
                 }
@@ -296,7 +294,6 @@ macro_rules! gpio {
             }
 
             impl PDOR {
-                #[allow(dead_code)]
                 pub(crate) fn pdor(&mut self) -> &$ptx::PDOR {
                     unsafe { &(*$PTX::ptr()).pdor }
                 }
@@ -308,7 +305,6 @@ macro_rules! gpio {
             }
 
             impl PSOR {
-                #[allow(dead_code)]
                 pub(crate) fn psor(&mut self) -> &$ptx::PSOR {
                     unsafe { &(*$PTX::ptr()).psor }
                 }
@@ -415,17 +411,17 @@ macro_rules! gpio {
                     }
 
                     fn is_set_low(&self) -> bool {
-                        unsafe { (*$PTX::ptr()).pdor.read().bits() & (1 << $i) == 0 }
+                        (PDOR { _0: () }).pdor().read().bits() & (1 << $i) == 0
                     }
                 }
 
                 impl<MODE> OutputPin for $PTXi<Output<MODE>> {
                     fn set_high(&mut self) {
-                        unsafe { (*$PTX::ptr()).psor.write(|w| w.bits(1 << $i)) }
+                        (PSOR { _0: () }).psor().write(|w| unsafe { w.bits(1 << $i) })
                     }
 
                     fn set_low(&mut self) {
-                        unsafe { (*$PTX::ptr()).pcor.write(|w| w.bits(1 << $i)) }
+                        (PCOR { _0: () }).pcor().write(|w| unsafe { w.bits(1 << $i) })
                     }
                 }
 
@@ -437,7 +433,7 @@ macro_rules! gpio {
                     }
 
                     fn is_low(&self) -> bool {
-                        unsafe { (*$PTX::ptr()).pdir.read().bits() & (1 << $i) == 0 }
+                        (PDIR { _0: () }).pdir().read().bits() & (1 << $i) == 0
                     }
                 }
             )+
