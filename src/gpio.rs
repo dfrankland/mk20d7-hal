@@ -416,56 +416,56 @@ macro_rules! gpio {
 
 // Reference: 10.3.1 K20 Signal Multiplexing and Pin Assignments
 gpio!(PORTA, porta, PTA, pta, gpioa, "A", [
-      PTA0: (pta0, 0, Input<Floating>, "0"), // JTAG_TCLK / SWD_CLK / EZP_CLK
-      PTA1: (pta1, 1, Input<Floating>, "1"), // JTAG_TDI / EZP_DI
-      PTA2: (pta2, 2, Input<Floating>, "2"), // JTAG_TDO / TRACE_SWO / EZP_DO
-      PTA3: (pta3, 3, Input<Floating>, "3"), // JTAG_TMS / SWD_DIO
-      PTA4: (pta4, 4, Input<Floating>, "4"), // NMI_b / EZP_CS_b
-      PTA5: (pta5, 5, Input<Floating>, "5"), // Disabled
-      PTA12: (pta12, 12, Input<Floating>, "12"), // CMP2_IN0
-      PTA13: (pta13, 13, Input<Floating>, "13"), // CMP2_IN1
-      PTA18: (pta18, 18, Input<Floating>, "18"), // EXTAL0
-      PTA19: (pta19, 19, Input<Floating>, "19"), // XTAL0
+      PTA0: (pta0, 0, Input<Floating>, "0"),
+      PTA1: (pta1, 1, Input<Floating>, "1"),
+      PTA2: (pta2, 2, Input<Floating>, "2"),
+      PTA3: (pta3, 3, Input<Floating>, "3"),
+      PTA4: (pta4, 4, Input<Floating>, "4"),
+      PTA5: (pta5, 5, Input<Floating>, "5"),
+      PTA12: (pta12, 12, Input<Floating>, "12"),
+      PTA13: (pta13, 13, Input<Floating>, "13"),
+      PTA18: (pta18, 18, Input<Floating>, "18"),
+      PTA19: (pta19, 19, Input<Floating>, "19"),
 ]);
 
 gpio!(PORTB, portb, PTB, ptb, gpiob, "B", [
-      PTB0: (ptb0, 0, Input<Floating>, "0"), // ADC0_SE8 / ADC1_SE8 / TSI0_CH0
-      PTB1: (ptb1, 1, Input<Floating>, "1"), // ADC0_SE9 / ADC1_SE9 / TSI0_CH6
-      PTB2: (ptb2, 2, Input<Floating>, "2"), // ADC0_SE12 / TSI0_CH7
-      PTB3: (ptb3, 3, Input<Floating>, "3"), // ADC0_SE13 / TSI0_CH8
-      PTB16: (ptb16, 16, Input<Floating>, "16"), // TSI0_CH9
-      PTB17: (ptb17, 17, Input<Floating>, "17"), // TSI0_CH10
-      PTB18: (ptb18, 18, Input<Floating>, "18"), // TSI0_CH11
-      PTB19: (ptb19, 19, Input<Floating>, "19"), // TSI0_CH12
+      PTB0: (ptb0, 0, Input<Floating>, "0"),
+      PTB1: (ptb1, 1, Input<Floating>, "1"),
+      PTB2: (ptb2, 2, Input<Floating>, "2"),
+      PTB3: (ptb3, 3, Input<Floating>, "3"),
+      PTB16: (ptb16, 16, Input<Floating>, "16"),
+      PTB17: (ptb17, 17, Input<Floating>, "17"),
+      PTB18: (ptb18, 18, Input<Floating>, "18"),
+      PTB19: (ptb19, 19, Input<Floating>, "19"),
 ]);
 
 gpio!(PORTC, portc, PTC, ptc, gpioc, "C", [
-      PTC0: (ptc0, 0, Input<Floating>, "0"), // ADC0_SE14 / TSI0_CH13
-      PTC1: (ptc1, 1, Input<Floating>, "1"), // ADC0_SE15 / TSI0_CH14
-      PTC2: (ptc2, 2, Input<Floating>, "2"), // ADC0_SE4b / CMP1_IN0 / TSI0_CH15
-      PTC3: (ptc3, 3, Input<Floating>, "3"), // CMP1_IN1
-      PTC4: (ptc4, 4, Input<Floating>, "4"), // Disabled
-      PTC5: (ptc5, 5, Input<Floating>, "5"), // Disabled
-      PTC6: (ptc6, 6, Input<Floating>, "6"), // CMP0_IN0
-      PTC7: (ptc7, 7, Input<Floating>, "7"), // CMP0_IN1
-      PTC8: (ptc8, 8, Input<Floating>, "8"), // ADC1_SE4b / CMP0_IN2
-      PTC9: (ptc9, 9, Input<Floating>, "9"), // ADC1_SE5b / CMP0_IN3
-      PTC10: (ptc10, 10, Input<Floating>, "10"), // ADC1_SE6b
-      PTC11: (ptc11, 11, Input<Floating>, "11"), // ADC1_SE7b
+      PTC0: (ptc0, 0, Input<Floating>, "0"),
+      PTC1: (ptc1, 1, Input<Floating>, "1"),
+      PTC2: (ptc2, 2, Input<Floating>, "2"),
+      PTC3: (ptc3, 3, Input<Floating>, "3"),
+      PTC4: (ptc4, 4, Input<Floating>, "4"),
+      PTC5: (ptc5, 5, Input<Floating>, "5"),
+      PTC6: (ptc6, 6, Input<Floating>, "6"),
+      PTC7: (ptc7, 7, Input<Floating>, "7"),
+      PTC8: (ptc8, 8, Input<Floating>, "8"),
+      PTC9: (ptc9, 9, Input<Floating>, "9"),
+      PTC10: (ptc10, 10, Input<Floating>, "10"),
+      PTC11: (ptc11, 11, Input<Floating>, "11"),
 ]);
 
 gpio!(PORTD, portd, PTD, ptd, gpiod, "D", [
-      PTD0: (ptd0, 0, Input<Floating>, "0"), // Disabled
-      PTD1: (ptd1, 1, Input<Floating>, "1"), // ADC0_SE5b
-      PTD2: (ptd2, 2, Input<Floating>, "2"), // Disabled
-      PTD3: (ptd3, 3, Input<Floating>, "3"), // Disabled
-      PTD4: (ptd4, 4, Input<Floating>, "4"), // Disabled
-      PTD5: (ptd5, 5, Input<Floating>, "5"), // ADC0_SE6b
-      PTD6: (ptd6, 6, Input<Floating>, "6"), // ADC0_SE7b
-      PTD7: (ptd7, 7, Input<Floating>, "7"), // Disabled
+      PTD0: (ptd0, 0, Input<Floating>, "0"),
+      PTD1: (ptd1, 1, Input<Floating>, "1"),
+      PTD2: (ptd2, 2, Input<Floating>, "2"),
+      PTD3: (ptd3, 3, Input<Floating>, "3"),
+      PTD4: (ptd4, 4, Input<Floating>, "4"),
+      PTD5: (ptd5, 5, Input<Floating>, "5"),
+      PTD6: (ptd6, 6, Input<Floating>, "6"),
+      PTD7: (ptd7, 7, Input<Floating>, "7"),
 ]);
 
 gpio!(PORTE, porte, PTE, pte, gpioe, "E", [
-      PTE0: (pte0, 0, Input<Floating>, "0"), // ADC1_SE4a
-      PTE1: (pte1, 1, Input<Floating>, "1"), // ADC1_SE5a
+      PTE0: (pte0, 0, Input<Floating>, "0"),
+      PTE1: (pte1, 1, Input<Floating>, "1"),
 ]);
