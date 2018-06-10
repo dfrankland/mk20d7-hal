@@ -85,7 +85,10 @@ macro_rules! gpio {
         pub mod $gpiox {
             use core::marker::PhantomData;
 
-            use hal::digital::OutputPin;
+            use hal::digital::{
+                OutputPin, StatefulOutputPin, ToggleableOutputPin, InputPin,
+                toggleable,
+            };
 
             use mk20d7::{sim::SCGC5, $PORTX, $PTX, $portx, $ptx};
 
@@ -356,23 +359,37 @@ macro_rules! gpio {
                         set_pin_mode($i, pddr, PinMode::Output);
                         $PTXi { _mode: PhantomData }
                     }
+                }
 
-                    pub fn is_high(&self, pdor: &mut PDOR) -> bool {
-                        pdor.pdor().read().bits() & (1 << $i) != 0
+                impl<MODE> StatefulOutputPin for $PTXi<Output<MODE>> {
+                    fn is_set_high(&self) -> bool {
+                        !self.is_set_low()
                     }
 
-                    pub fn is_low(&self, pdor: &mut PDOR) -> bool {
-                        !self.is_high(pdor)
+                    fn is_set_low(&self) -> bool {
+                        unsafe { (*$PTX::ptr()).pdor.read().bits() & (1 << $i) == 0 }
                     }
                 }
 
                 impl<MODE> OutputPin for $PTXi<Output<MODE>> {
+                    fn set_high(&mut self) {
+                        unsafe { (*$PTX::ptr()).psor.write(|w| w.bits(1 << $i)) }
+                    }
+
                     fn set_low(&mut self) {
                         unsafe { (*$PTX::ptr()).pcor.write(|w| w.bits(1 << $i)) }
                     }
+                }
 
-                    fn set_high(&mut self) {
-                        unsafe { (*$PTX::ptr()).psor.write(|w| w.bits(1 << $i)) }
+                impl<MODE> toggleable::Default for $PTXi<Output<MODE>> {}
+
+                impl<MODE> InputPin for $PTXi<Input<MODE>> {
+                    fn is_high(&self) -> bool {
+                        !self.is_low()
+                    }
+
+                    fn is_low(&self) -> bool {
+                        unsafe { (*$PTX::ptr()).pdir.read().bits() & (1 << $i) == 0 }
                     }
                 }
             )+
