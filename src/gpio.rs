@@ -61,19 +61,35 @@ pub struct ALT7;
 
 // Pin mux controller mode
 enum PinMux {
+    #[allow(dead_code)]
     ALT0,
+
     ALT1,
+
+    #[allow(dead_code)]
     ALT2,
+
+    #[allow(dead_code)]
     ALT3,
+
+    #[allow(dead_code)]
     ALT4,
+
+    #[allow(dead_code)]
     ALT5,
+
+    #[allow(dead_code)]
     ALT6,
+
+    #[allow(dead_code)]
     ALT7,
 }
 
 // Pin mode (when pin is in ALT1 gpio mode)
 enum PinMode {
     Output,
+
+    #[allow(dead_code)]
     Input,
 }
 
@@ -86,7 +102,7 @@ macro_rules! gpio {
             use core::marker::PhantomData;
 
             use hal::digital::{
-                OutputPin, StatefulOutputPin, ToggleableOutputPin, InputPin,
+                OutputPin, StatefulOutputPin, InputPin,
                 toggleable,
             };
 
@@ -289,6 +305,7 @@ macro_rules! gpio {
             }
 
             impl PDOR {
+                #[allow(dead_code)]
                 pub(crate) fn pdor(&mut self) -> &$ptx::PDOR {
                     unsafe { &(*$PTX::ptr()).pdor }
                 }
