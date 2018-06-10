@@ -35,32 +35,30 @@ pub struct PushPull;
 /// Open drain output (type state)
 pub struct OpenDrain;
 
-/// Alternate function 0 (type state)
+/// Alternate function 0 (type state, Analog)
 pub struct ALT0;
 
-/// Alternate function 1 (type state)
+/// Alternate function 1 (type state, GPIO)
 pub struct ALT1;
 
-/// Alternate function 2 (type state)
+/// Alternate function 2 (type state, chip specific)
 pub struct ALT2;
 
-/// Alternate function 3 (type state)
+/// Alternate function 3 (type state, chip specific)
 pub struct ALT3;
 
-/// Alternate function 4 (type state)
+/// Alternate function 4 (type state, chip specific)
 pub struct ALT4;
 
-/// Alternate function 5 (type state)
+/// Alternate function 5 (type state, chip specific)
 pub struct ALT5;
 
-/// Alternate function 6 (type state)
+/// Alternate function 6 (type state, chip specific)
 pub struct ALT6;
 
-/// Alternate function 7 (type state)
+/// Alternate function 7 (type state, chip specific / JTAG / NMI)
 pub struct ALT7;
 
-/// Alternate function EzPort (type state)
-pub struct EzPort;
 
 macro_rules! gpio {
     ($PORTX:ident, $portx:ident, $PTX:ident, $ptx:ident, $gpiox:ident, $docport:expr, [ $($PTXi:ident: ($ptxi:ident, $i:expr, $MODE:ty, $docpin:expr),)+]) =>
