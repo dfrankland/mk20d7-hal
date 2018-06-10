@@ -59,6 +59,23 @@ pub struct ALT6;
 /// Alternate function 7 (type state, chip specific / JTAG / NMI)
 pub struct ALT7;
 
+// Pin mux controller mode
+enum PinMux {
+    ALT0,
+    ALT1,
+    ALT2,
+    ALT3,
+    ALT4,
+    ALT5,
+    ALT6,
+    ALT7,
+}
+
+// Pin mode (when pin is in ALT1 gpio mode)
+enum PinMode {
+    Output,
+    Input,
+}
 
 macro_rules! gpio {
     ($PORTX:ident, $portx:ident, $PTX:ident, $ptx:ident, $gpiox:ident, $docport:expr, [ $($PTXi:ident: ($ptxi:ident, $i:expr, $MODE:ty, $docpin:expr),)+]) =>
@@ -75,6 +92,7 @@ macro_rules! gpio {
             use super::{
                 Floating, GpioExt, Input, Output,
                 PushPull,
+                PinMux, PinMode,
             };
 
             /// General Purpose Input/Output and Pin Control and Interrupts parts
@@ -297,8 +315,32 @@ macro_rules! gpio {
                 }
             }
 
+            fn set_pin_mux(pin: usize, pcr: &mut PCR, pin_mux: PinMux) {
+                let alt = match pin_mux {
+                    PinMux::ALT0 => $portx::pcr::MUXW::_000,
+                    PinMux::ALT1 => $portx::pcr::MUXW::_001,
+                    PinMux::ALT2 => $portx::pcr::MUXW::_010,
+                    PinMux::ALT3 => $portx::pcr::MUXW::_011,
+                    PinMux::ALT4 => $portx::pcr::MUXW::_100,
+                    PinMux::ALT5 => $portx::pcr::MUXW::_101,
+                    PinMux::ALT6 => $portx::pcr::MUXW::_110,
+                    PinMux::ALT7 => $portx::pcr::MUXW::_111,
+                };
+
+                pcr.pcr()[pin].write(|w| w.mux().variant(alt));
+            }
+
+            fn set_pin_mode(pin: u32, pddr: &mut PDDR, pin_mode: PinMode) {
+                let bit = match pin_mode {
+                    PinMode::Output => 1 << pin,
+                    PinMode::Input => !(1 << pin),
+                };
+                pddr.pddr().modify(|r, w| unsafe { w.bits(r.bits() | bit) });
+            }
+
             // This pin owns its section of the PDOR, PSOR, PCOR, PTOR, and PDIR registers, as well
             // as its PCR register
+            // Reference: 11.14.1 Pin Control Register n (PORTx_PCRn)
             $(
                 #[doc = "General Purpose Input/Output Port "]
                 #[doc = $docport]
@@ -308,21 +350,10 @@ macro_rules! gpio {
                     _mode: PhantomData<MODE>,
                 }
 
-                // Reference: 11.14.1 Pin Control Register n (PORTx_PCRn)
                 impl<MODE> $PTXi<MODE> {
                     pub fn into_push_pull_output(self, pcr: &mut PCR, pddr: &mut PDDR) -> $PTXi<Output<PushPull>> {
-                        pcr.pcr()[$i].write(
-                            |w| {
-                                w.mux()._001(); // Set the pin to mode 1 (GPIO)
-                                w.ode().clear_bit(); // Disable Open Drain
-                                w.dse().set_bit(); // Enable Drive Strength
-                                w.sre().set_bit() // Enable Slew Rate
-                            }
-                        );
-
-                        // Set the pin to output mode
-                        pddr.pddr().modify(|r, w| unsafe { w.bits(r.bits() | 1 << $i) });
-
+                        set_pin_mux($i, pcr, PinMux::ALT1);
+                        set_pin_mode($i, pddr, PinMode::Output);
                         $PTXi { _mode: PhantomData }
                     }
 
