@@ -35,6 +35,10 @@ pub struct PushPull;
 /// Open drain output (type state)
 pub struct OpenDrain;
 
+pub struct Alternate<MODE> {
+    _mode: PhantomData<MODE>,
+}
+
 /// Alternate function 0 (type state, Analog)
 pub struct ALT0;
 
@@ -61,27 +65,13 @@ pub struct ALT7;
 
 // Pin mux controller mode
 enum PinMux {
-    #[allow(dead_code)]
     ALT0,
-
     ALT1,
-
-    #[allow(dead_code)]
     ALT2,
-
-    #[allow(dead_code)]
     ALT3,
-
-    #[allow(dead_code)]
     ALT4,
-
-    #[allow(dead_code)]
     ALT5,
-
-    #[allow(dead_code)]
     ALT6,
-
-    #[allow(dead_code)]
     ALT7,
 }
 
@@ -111,6 +101,7 @@ macro_rules! gpio {
             use super::{
                 Floating, GpioExt, Input, Output,
                 PushPull,
+                Alternate, ALT0, ALT1, ALT2, ALT3, ALT4, ALT5, ALT6, ALT7,
                 PinMux, PinMode,
             };
 
@@ -371,6 +362,46 @@ macro_rules! gpio {
                 }
 
                 impl<MODE> $PTXi<MODE> {
+                    pub fn into_alternate_alt0(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT0>> {
+                        set_pin_mux($i, pcr, PinMux::ALT0);
+                        $PTXi { _mode: PhantomData }
+                    }
+
+                    pub fn into_alternate_alt1(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT1>> {
+                        set_pin_mux($i, pcr, PinMux::ALT1);
+                        $PTXi { _mode: PhantomData }
+                    }
+
+                    pub fn into_alternate_alt2(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT2>> {
+                        set_pin_mux($i, pcr, PinMux::ALT2);
+                        $PTXi { _mode: PhantomData }
+                    }
+
+                    pub fn into_alternate_alt3(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT3>> {
+                        set_pin_mux($i, pcr, PinMux::ALT3);
+                        $PTXi { _mode: PhantomData }
+                    }
+
+                    pub fn into_alternate_alt4(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT4>> {
+                        set_pin_mux($i, pcr, PinMux::ALT4);
+                        $PTXi { _mode: PhantomData }
+                    }
+
+                    pub fn into_alternate_alt5(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT5>> {
+                        set_pin_mux($i, pcr, PinMux::ALT5);
+                        $PTXi { _mode: PhantomData }
+                    }
+
+                    pub fn into_alternate_alt6(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT6>> {
+                        set_pin_mux($i, pcr, PinMux::ALT6);
+                        $PTXi { _mode: PhantomData }
+                    }
+
+                    pub fn into_alternate_alt7(self, pcr: &mut PCR) -> $PTXi<Alternate<ALT7>> {
+                        set_pin_mux($i, pcr, PinMux::ALT7);
+                        $PTXi { _mode: PhantomData }
+                    }
+
                     pub fn into_push_pull_output(self, pcr: &mut PCR, pddr: &mut PDDR) -> $PTXi<Output<PushPull>> {
                         set_pin_mux($i, pcr, PinMux::ALT1);
                         set_pin_mode($i, pddr, PinMode::Output);
