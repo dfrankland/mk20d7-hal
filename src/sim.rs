@@ -1,6 +1,6 @@
 use mk20d7::{sim::RegisterBlock, sim::clkdiv1};
 
-const MAXIMUM_CLOCK_FREQUENCY: u8 = 72;
+pub const MAXIMUM_CLOCK_FREQUENCY: u8 = 72;
 
 pub struct SystemIntegrationModule<'a> {
     sim: &'a RegisterBlock,
