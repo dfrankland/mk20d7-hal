@@ -1,14 +1,28 @@
+use core::convert::TryFrom;
+
 use mk20d7::{mcg::RegisterBlock, mcg::c1};
+
+use sim::MAXIMUM_CLOCK_FREQUENCY;
+use bitrate::{U32BitrateExt, KiloHertz, MegaHertz};
+
+pub const FLL_RANGE_MIN: f32 = 31.25;
+pub const FLL_RANGE_MAX: f32 = 39.0625;
+
+pub const PLL_DIVIDER_NUMERATOR_MIN: u8 = 24;
+pub const PLL_DIVIDER_NUMERATOR_MAX: u8 = 55;
+pub const PLL_DIVIDER_DENOMINATOR_MIN: u8 = 1;
+pub const PLL_DIVIDER_DENOMINATOR_MAX: u8 = 25;
 
 pub struct MultipurposeClockGenerator<'a> {
     mcg: &'a RegisterBlock,
+    pub external_crystal_frequency: MegaHertz<u32>,
 }
 
 pub struct Fei<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
 #[allow(dead_code)] pub struct Fee<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
 #[allow(dead_code)] pub struct Fbi<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
 pub struct Fbe<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
-#[allow(dead_code)] pub struct Pee<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
+pub struct Pee<'a> { #[allow(dead_code)] mcg: &'a mut MultipurposeClockGenerator<'a> }
 pub struct Pbe<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
 #[allow(dead_code)] pub struct Blpi<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
 #[allow(dead_code)] pub struct Blpe<'a> { mcg: &'a mut MultipurposeClockGenerator<'a> }
@@ -28,8 +42,8 @@ pub enum ClockMode<'a> {
 }
 
 impl<'a> MultipurposeClockGenerator<'a> {
-    pub fn new(mcg: &'a RegisterBlock) -> MultipurposeClockGenerator<'a> {
-        MultipurposeClockGenerator { mcg }
+    pub fn new(mcg: &'a RegisterBlock, external_crystal_frequency: MegaHertz<u32>) -> MultipurposeClockGenerator<'a> {
+        MultipurposeClockGenerator { mcg, external_crystal_frequency }
     }
 
     pub fn clock_mode(&'a mut self) -> ClockMode<'a> {
@@ -38,9 +52,9 @@ impl<'a> MultipurposeClockGenerator<'a> {
         let pll_enabled = self.mcg.c6.read().plls().bit_is_set();
         let low_power_enabled = self.mcg.c2.read().lp().bit_is_set();
 
-        // The 16 Mhz external crystal can only be divided by 512 to stay within the 31.25 kHz to
-        // 39.0625 kHz range of the FLL
-        let fll_range_ok = self.get_external_crystal_frequency_divider() == 512;
+        let external_crystal_frequency_khz: KiloHertz<u32> = self.external_crystal_frequency.into();
+        let fll = external_crystal_frequency_khz.0 as f32 / f32::from(self.get_external_crystal_frequency_divider());
+        let fll_range_ok = fll >= FLL_RANGE_MIN && fll <= FLL_RANGE_MAX;
 
         let mcg = self;
         match (clock_source, internal_clock_reference, pll_enabled, low_power_enabled, fll_range_ok) {
@@ -134,24 +148,48 @@ impl<'a> MultipurposeClockGenerator<'a> {
         while !self.mcg.s.read().clkst().is_10() {} // Wait for clock source to be the crystal osc
     }
 
-    pub fn enable_pll(&mut self, numerator: u8, denominator: u8) {
-        if numerator < 24 || numerator > 55 {
+    pub fn set_pll_frequency_divider(&mut self, numerator: u8, denominator: u8) {
+        if numerator < PLL_DIVIDER_NUMERATOR_MIN || numerator > PLL_DIVIDER_NUMERATOR_MAX {
             panic!("Invalid PLL VCO divide factor: {}", numerator);
         }
 
-        if denominator < 1 || denominator > 25 {
+        if denominator < PLL_DIVIDER_DENOMINATOR_MIN || denominator > PLL_DIVIDER_DENOMINATOR_MAX {
             panic!("Invalid PLL reference divide factor: {}", denominator);
         }
 
-        self.mcg.c5.write(|w| unsafe { w.prdiv0().bits(denominator - 1) });
+        self.mcg.c5.write(|w| unsafe { w.prdiv0().bits(denominator - PLL_DIVIDER_DENOMINATOR_MIN) });
 
         self.mcg.c6.write(
             |w| {
-                unsafe { w.vdiv0().bits(numerator - 24); }
+                unsafe { w.vdiv0().bits(numerator - PLL_DIVIDER_NUMERATOR_MIN); }
                 w.plls().set_bit()
             }
         );
+    }
 
+    pub fn get_pll_frequency_divider(&self) -> (u8, u8) {
+        let numerator = self.mcg.c6.read().vdiv0().bits() + PLL_DIVIDER_NUMERATOR_MIN;
+        let denominator = self.mcg.c5.read().prdiv0().bits() + PLL_DIVIDER_DENOMINATOR_MIN;
+        (numerator, denominator)
+    }
+
+    pub fn set_pll_frequency(&mut self, frequency: MegaHertz<u32>) {
+        let divider = pll_frequency_divider_gcd(
+            u8::try_from(frequency.0).unwrap(),
+            u8::try_from(self.external_crystal_frequency.0).unwrap()
+        );
+        self.set_pll_frequency_divider(divider.0, divider.1);
+    }
+
+    pub fn get_pll_frequency(&self) -> MegaHertz<u32> {
+        let (numerator, denominator) = self.get_pll_frequency_divider();
+        let num = u32::from(numerator);
+        let den = u32::from(denominator);
+        ((num / den) * self.external_crystal_frequency.0).mhz()
+    }
+
+    pub fn enable_pll(&mut self) {
+        self.mcg.c6.write(|w| w.plls().set_bit());
         while self.mcg.s.read().pllst().bit_is_clear() {} // Wait for PLL to be enabled
         while self.mcg.s.read().lock0().bit_is_clear() {} // Wait for PLL to be "locked" and stable
     }
@@ -171,7 +209,7 @@ impl<'a> Into<Fbe<'a>> for Fei<'a> {
     fn into(self) -> Fbe<'a> {
         self.mcg.set_external_crystal_frequency_range_high();
         self.mcg.enable_external_crystal_request();
-        self.mcg.set_external_crystal_frequency_divider(512);
+        self.mcg.set_external_crystal_frequency_divider(512); // FIXME: Assumes a 16 Mhz crystal, don't hard code this
         self.mcg.use_external_crystal();
         match self.mcg.clock_mode() {
             ClockMode::Fbe(fbe) => fbe,
@@ -182,7 +220,8 @@ impl<'a> Into<Fbe<'a>> for Fei<'a> {
 
 impl<'a> Into<Pbe<'a>> for Fbe<'a> {
     fn into(self) -> Pbe<'a> {
-        self.mcg.enable_pll(27, 6);
+        self.mcg.set_pll_frequency(u32::from(MAXIMUM_CLOCK_FREQUENCY).mhz()); // FIXME: Assumes 72 Mhz, don't hard code this
+        self.mcg.enable_pll();
         match self.mcg.clock_mode() {
             ClockMode::Pbe(pbe) => pbe,
             _ => panic!("Somehow the clock wasn't in PBE mode"),
@@ -198,4 +237,42 @@ impl<'a> Into<Pee<'a>> for Pbe<'a> {
             _ => panic!("Somehow the clock wasn't in PEE mode"),
         }
     }
+}
+
+fn pll_frequency_divider_gcd(numerator: u8, denominator: u8) -> (u8, u8) {
+    // Euclid's GCD
+    let mut num = numerator;
+    let mut den = denominator;
+    while den != 0 {
+        let temp = den;
+        den = num % den;
+        num = temp;
+    }
+    let gcd = num;
+    num = numerator / gcd;
+    den = denominator / gcd;
+
+    // GCD too high or too low, not a valid PLL frequency
+    if num == 0 || den == 0 || num > PLL_DIVIDER_NUMERATOR_MAX || den > PLL_DIVIDER_DENOMINATOR_MAX {
+        panic!("Cannot find a GCD for PLL frequency divider {}/{}.", numerator, denominator);
+    }
+
+    // GCD too low, coerce into an acceptable range
+    let mut freq_num = num;
+    let mut freq_den = den;
+    let mut mul = 1;
+    while freq_num < PLL_DIVIDER_NUMERATOR_MIN || freq_den < PLL_DIVIDER_DENOMINATOR_MIN {
+        mul += 1;
+        match (num.checked_mul(mul), den.checked_mul(mul)) {
+            (Some(new_freq_num), Some(new_freq_den)) if
+            new_freq_num <= PLL_DIVIDER_NUMERATOR_MAX &&
+            new_freq_den <= PLL_DIVIDER_DENOMINATOR_MAX => {
+                freq_num = new_freq_num;
+                freq_den = new_freq_den;
+            },
+            _ => panic!("Cannot find a GCD for PLL frequency divider {}/{}.", numerator, denominator),
+        }
+    }
+
+    (freq_num, freq_den)
 }
