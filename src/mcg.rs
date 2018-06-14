@@ -179,7 +179,7 @@ impl<'a> MultipurposeClockGenerator<'a> {
         let (numerator, denominator) = self.get_pll_frequency_divider();
         let num = u32::from(numerator);
         let den = u32::from(denominator);
-        ((num / den) * self.external_crystal_frequency.0).mhz()
+        ((num * self.external_crystal_frequency.0) / den).mhz()
     }
 
     pub fn enable_pll(&mut self) {
