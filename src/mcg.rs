@@ -158,13 +158,7 @@ impl<'a> MultipurposeClockGenerator<'a> {
         }
 
         self.mcg.c5.write(|w| unsafe { w.prdiv0().bits(denominator - PLL_DIVIDER_DENOMINATOR_MIN) });
-
-        self.mcg.c6.write(
-            |w| {
-                unsafe { w.vdiv0().bits(numerator - PLL_DIVIDER_NUMERATOR_MIN); }
-                w.plls().set_bit()
-            }
-        );
+        self.mcg.c6.write(|w| unsafe { w.vdiv0().bits(numerator - PLL_DIVIDER_NUMERATOR_MIN) });
     }
 
     pub fn get_pll_frequency_divider(&self) -> (u8, u8) {
