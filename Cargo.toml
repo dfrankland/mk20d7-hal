@@ -1,6 +1,6 @@
 [package]
 name = "mk20d7-hal"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Dylan Frankland <dylan@frankland.io>"]
 categories = ["embedded", "hardware-support", "no-std"]
 description = "HAL for the MK20D7 family of microcontrollers"
