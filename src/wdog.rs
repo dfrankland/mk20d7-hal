@@ -1,12 +1,12 @@
-use mk20d7::{self, wdog::RegisterBlock};
 use cortex_m::asm;
+use mk20d7::{self, wdog::RegisterBlock};
 
 pub struct Watchdog<'a> {
     wdog: &'a RegisterBlock,
 }
 
 impl<'a> Watchdog<'a> {
-    pub fn new (wdog: &'a RegisterBlock) -> Watchdog<'a> {
+    pub fn new(wdog: &'a RegisterBlock) -> Watchdog<'a> {
         Watchdog { wdog }
     }
 
@@ -31,29 +31,16 @@ impl<'a> Watchdog<'a> {
     }
 
     pub fn enable(&self) {
-        self.wdog.stctrlh.write(
-            |w| {
-                w.wdogen().set_bit()
-            }
-        );
+        self.wdog.stctrlh.write(|w| w.wdogen().set_bit());
     }
 
     pub fn disable(&self) {
-        self.wdog.unlock.write(
-            |w| {
-                unsafe {
-                    w.bits(0xC520).bits(0xD928)
-                }
-            }
-        );
+        self.wdog.unlock.write(|w| unsafe { w.bits(0xC520) });
+        self.wdog.unlock.write(|w| unsafe { w.bits(0xD928) });
 
         asm::nop();
         asm::nop();
 
-        self.wdog.stctrlh.write(
-            |w| {
-                w.wdogen().clear_bit()
-            }
-        );
+        self.wdog.stctrlh.write(|w| w.wdogen().clear_bit());
     }
 }
